@@ -1,0 +1,23 @@
+Build
+
+Prerequisites
+opencv
+
+simply type 
+make 
+
+Run
+
+./bm           -f|--front <ImgPath> 
+               [-s|--side <ImgPath>]
+	       [-p]
+               [-w --width <width to resize all images to before processing>]
+               [-h | --height <height to resize after segmentation>]
+               [-fp | --fpixelx <width in pixels to resize frontal images for joints detection>]
+               [-sp | --spixelx <width in pixels to resize sideview image for joints detection>]
+               [-wa | --wast <wast variable>]
+
+output right now is the files containing skeleton info
+Using example:
+./bm -f front.jpg -s side.jpg
+

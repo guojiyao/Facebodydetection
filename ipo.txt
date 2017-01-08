@@ -1,0 +1,14 @@
+input height = 68.639999
+input waist = 0.000000
+cosinus = 1.000000
+shoulder = 33.639046
+chest = 0.000000
+waist = 74.087616
+Mwaist = 74.087616
+hip = 0.000000
+arm = 0.680952
+S chest = 0.000000
+S waist = 14.163809
+S hip = 0.000000
+S arm = 0.680952
+S leg = 32.821903

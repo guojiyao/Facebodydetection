@@ -1,0 +1,6 @@
+BodyMeasurement.cpp: In function ‘void FExportPoints()’:
+BodyMeasurement.cpp:503:40: error: cannot pass objects of non-trivially-copyable type ‘cv::Rect {aka class cv::Rect_<int>}’ through ‘...’
+  fprintf(fp, "face = %d\n", improc.face);
+                                        ^
+BodyMeasurement.cpp:503:40: warning: format ‘%d’ expects argument of type ‘int’, but argument 3 has type ‘cv::Rect’ [-Wformat=]
+make: *** [bm] Error 1
