@@ -14,9 +14,10 @@ BodySegmentator::BodySegmentator()
     MAX_AREA = -1;
 }
 
-std::tuple<bool,cv::Rect> BodySegmentator::IoU(double old_h, double old_w, double new_h, double new_w, cv::Rect ear, cv::Rect face){
+std::tuple<bool,cv::Rect,cv::Rect> BodySegmentator::IoU(double old_h, double old_w, double new_h, double new_w, cv::Rect ear, cv::Rect face){
     double h_factor = old_h/new_h;
     double w_factor = old_w/new_w;
+    std::cout << face.x << "  "<< face.y << "  "<< face.width << "  "<< face.height << std::endl;
 
     cv::Rect scaledface;
     scaledface.x = face.x * w_factor;
@@ -25,10 +26,10 @@ std::tuple<bool,cv::Rect> BodySegmentator::IoU(double old_h, double old_w, doubl
     scaledface.width = face.width * w_factor;
     scaledface.height = face.height * h_factor;	
     cv::Rect u = scaledface & ear;
-    
+     
     bool inter = (u.area()>0);     
 
-    return std::make_tuple(inter,u); 
+    return std::make_tuple(inter,u,scaledface); 
 }
 
 int BodySegmentator::run(const ArgumentParser& p)
@@ -141,16 +142,25 @@ int BodySegmentator::run(const ArgumentParser& p)
         //Ear detection
         if(p.getEar()){ 
         std::vector<cv::Rect> ear = detectEar(img_side_ear.clone(),false,p.getFlip());
-        
+        cv::Rect facebyEar;   
+        bool isEar = false;     
         if (ear.size() > 0){
             cv::Rect biggest_ear = ear[0];
             for (int i = 1; i < ear.size(); ++i) {
-                if (biggest_ear.area() < ear.at(i).area()) {
-                    biggest_ear = ear.at(i);
+                cv::Rect temp;
+                std::tie(isEar,temp,facebyEar) = IoU(original_height,original_width,new_height,new_width,ear.at(i),face_coords_lst_side[0]);
+                if (isEar == true) {
+                    std::cout<<"ear selected"<<std::endl;
+                    biggest_ear = temp;
                 }
             }
             ear = std::vector<cv::Rect>(1, biggest_ear);
             cv::Mat ear_image = fd_side.draw_rect(img_side_ear,ear);
+            int x = facebyEar.x;
+            int y = facebyEar.y;
+            int h = facebyEar.height;
+            int w = facebyEar.width;
+            cv::rectangle(ear_image, cv::Point(x, y), cv::Point(x + w, y + h), cv::Scalar(255, 255, 255),2,8);
             cv::imwrite("ear_detectoin.png",ear_image);
         }
         }
@@ -160,6 +170,7 @@ int BodySegmentator::run(const ArgumentParser& p)
         cv::Mat img_side_nose = img_side_ear.clone(); 
         std::vector<cv::Rect> nose = detectNose(img_side_nose.clone(),false,p.getFlip());
         if (nose.size() > 0){
+            cv::Rect newface;
             cv::Rect biggest_nose = nose[0];
             bool isNose = false;
             for (int i = 0; i < nose.size(); ++i) {
@@ -167,11 +178,19 @@ int BodySegmentator::run(const ArgumentParser& p)
             //        biggest_nose = nose.at(i);
             //    }
                 cv::Rect temp;
-                //std::tie(isNose,temp) = IoU(original_height,original_width,new_height,new_width,nose.at(i),face_coords_lst_side[0]);
-                //if (isNose == true) std::cout<<"nose selected"<<std::endl;
+                std::tie(isNose,temp,newface) = IoU(original_height,original_width,new_height,new_width,nose.at(i),face_coords_lst_side[0]);
+                if (isNose == true) {
+                    std::cout<<"nose selected"<<std::endl;
+                    biggest_nose = temp;
+                }
             }
-            //nose = std::vector<cv::Rect>(1, biggest_nose);
+            nose = std::vector<cv::Rect>(1, biggest_nose);
             cv::Mat nose_image = fd_side.draw_rect(img_side_nose,nose);
+            int x = newface.x;
+            int y = newface.y;
+            int h = newface.height;
+            int w = newface.width;
+            cv::rectangle(nose_image, cv::Point(x, y), cv::Point(x + w, y + h), cv::Scalar(255, 255, 255),2,8);
             cv::imwrite("nose_detectoin.png",nose_image);
         }
         }

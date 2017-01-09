@@ -24,7 +24,7 @@ public:
     {
         return m_sideViewResultImage;
     }
-    std::tuple<bool,cv::Rect> IoU(double old_h, double old_w, double new_h, double new_w, cv::Rect ear, cv::Rect face);
+    std::tuple<bool,cv::Rect,cv::Rect> IoU(double old_h, double old_w, double new_h, double new_w, cv::Rect ear, cv::Rect face);
 
 private:
     int IMG_WIDTH;
