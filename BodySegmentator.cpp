@@ -146,12 +146,15 @@ int BodySegmentator::run(const ArgumentParser& p)
         bool isEar = false;     
         if (ear.size() > 0){
             cv::Rect biggest_ear = ear[0];
-            for (int i = 1; i < ear.size(); ++i) {
+            for (int i = 0; i < ear.size(); ++i) {
                 cv::Rect temp;
                 std::tie(isEar,temp,facebyEar) = IoU(original_height,original_width,new_height,new_width,ear.at(i),face_coords_lst_side[0]);
                 if (isEar == true) {
                     std::cout<<"ear selected"<<std::endl;
                     biggest_ear = temp;
+                }
+                else {
+                    std::cout<<"no intersection found between ear and face please check your face detection"<<std::endl;
                 }
             }
             ear = std::vector<cv::Rect>(1, biggest_ear);
