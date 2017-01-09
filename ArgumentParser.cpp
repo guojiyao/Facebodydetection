@@ -17,6 +17,9 @@ ArgumentParser::ArgumentParser(int argc, char *argv[])
     , m_wast(s_invalidNumericalValue)
     , m_isValid(false)
     , mArgc(argc)
+    , m_earDetect(false)
+    , m_noseDetect(false)
+    , m_FlipImage(false)
 {
     for (int i = 0; i < argc; ++i){
         mArgv.push_back(argv[i]);
@@ -31,6 +34,24 @@ bool ArgumentParser::parse()
         if(mArgv[i] == std::string("-f") || mArgv[i] == std::string("--front")) {
             if(i + 1 < mArgc) {
                 m_frontalPath = mArgv[i + 1];
+            } else {
+                return false;
+            }
+        } else if(mArgv[i] == std::string("-e") || mArgv[i] == std::string("--ear")) {
+            if(i + 1 < mArgc) {
+                if (mArgv[i + 1]== "t") m_earDetect = true;
+            } else {
+                return false;
+            }
+        } else if(mArgv[i] == std::string("-n") || mArgv[i] == std::string("--nose")) {
+            if(i + 1 < mArgc) {
+                if (mArgv[i + 1]== "t") m_noseDetect = true;
+            } else {
+                return false;
+            }
+        } else if(mArgv[i] == std::string("-fl") || mArgv[i] == std::string("--flip")) {
+            if(i + 1 < mArgc) {
+                if (mArgv[i + 1]== "t") m_FlipImage = true;
             } else {
                 return false;
             }
@@ -82,6 +103,22 @@ bool ArgumentParser::getPreproc() const
 {
     return m_preproc;
 }
+
+bool ArgumentParser::getEar() const
+{
+    return m_earDetect;
+}
+
+bool ArgumentParser::getNose() const
+{
+    return m_noseDetect;
+}
+
+bool ArgumentParser::getFlip() const
+{
+    return m_FlipImage;
+}
+
 
 bool ArgumentParser::isValid() const
 {

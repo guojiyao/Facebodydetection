@@ -12,6 +12,9 @@ public:
 
     bool isValid() const;
     bool getPreproc() const;
+    bool getEar() const;
+    bool getNose() const;
+    bool getFlip() const;
     int getWidth() const;
     float getHeight() const;
     float getWast() const;
@@ -24,6 +27,9 @@ public:
     {
        std::string h =
                "-f|--front <ImgPath> "
+               "-e|--ear t/f "
+               "-n|--nose t/f"
+               "-fl|--flip t/f"
                "[-s|--side <ImgPath>] [-p]"
                "[-w --width <width to resize all images to before processing>]"
                "-h --height <height to resize after segmentation>"
@@ -48,6 +54,9 @@ private:
     float m_wast;
 
     bool m_isValid;
+    bool m_earDetect;
+    bool m_noseDetect;
+    bool m_FlipImage;
     int mArgc;
     std::vector<std::string> mArgv;
 public:
