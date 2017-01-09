@@ -8,7 +8,10 @@ make
 
 Run
 
-./bm           -f|--front <ImgPath> 
+./bm           -f|--front <ImgPath>
+               -e|--ear t/f 
+               -n|--nose t/f
+               -fl|--flip t/f 
                [-s|--side <ImgPath>]
 	       [-p]
                [-w --width <width to resize all images to before processing>]

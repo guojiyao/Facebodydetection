@@ -3,12 +3,32 @@
 #include "face_detection.h"
 #include "SideEarDetection.h"
 #include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <iostream>
 
 BodySegmentator::BodySegmentator()
 {
     IMG_WIDTH = 700;
     MIN_AREA = -1;
     MAX_AREA = -1;
+}
+
+std::tuple<bool,cv::Rect> BodySegmentator::IoU(double old_h, double old_w, double new_h, double new_w, cv::Rect ear, cv::Rect face){
+    double h_factor = old_h/new_h;
+    double w_factor = old_w/new_w;
+
+    cv::Rect scaledface;
+    scaledface.x = face.x * w_factor;
+    scaledface.y = face.y * h_factor;
+
+    scaledface.width = face.width * w_factor;
+    scaledface.height = face.height * h_factor;	
+    cv::Rect u = scaledface & ear;
+    
+    bool inter = (u.area()>0);     
+
+    return std::make_tuple(inter,u); 
 }
 
 int BodySegmentator::run(const ArgumentParser& p)
@@ -25,7 +45,10 @@ int BodySegmentator::run(const ArgumentParser& p)
     cv::Mat img_hsv;
 
     cv::Mat img = cv::imread(p.getFrontPath());
-	std::cout << "Img.size() " << img.size()<<std::endl;
+    std::cout << "Img.size() " << img.size()<<std::endl;
+    double original_height = img.size().height;
+    double original_width = img.size().width;
+
     if(img.empty()) {
         std::cout << "Specified frontal path: " << p.getFrontPath() << "  is not valid " << std::endl;
         exit(-1);
@@ -33,6 +56,7 @@ int BodySegmentator::run(const ArgumentParser& p)
     img = resize(img, IMG_WIDTH);
     
     std::cout << "Img.size() after resize " << img.size()<<std::endl;
+
     cv::cvtColor(img, img_hsv, cv::COLOR_BGR2HSV);
     int height = img.rows;
     int width = img.cols;
@@ -47,11 +71,12 @@ int BodySegmentator::run(const ArgumentParser& p)
     if(p.getSidePath() != ArgumentParser::s_invalidPath) {
         SIDE_VIEW = 1;
         img_side = cv::imread(p.getSidePath());
+        original_height = img_side.size().height;
+        original_width = img_side.size().width;
         img_side_ear = img_side.clone();
         img_side = resize(img_side, IMG_WIDTH);
-        
         // transfer the color distribution from the source image
-
+        
         img_side_trans = color_transfer(img.clone(), img_side.clone());
         cv::cvtColor(img_side_trans, img_side_hsv, cv::COLOR_BGR2HSV);
         height_side = img_side.rows;
@@ -103,6 +128,8 @@ int BodySegmentator::run(const ArgumentParser& p)
          //cv::imshow("img_side_hsv", img_side_hsv);
 
         face_coords_lst_side = find_face_from_skin(img_side_hsv, skin_hist, MIN_AREA, MAX_AREA, height, width, x, y);
+        double new_height = img_side_hsv.size().height;
+        double new_width = img_side_hsv.size().width;
         //std::cout << face_coords_lst_side.size();
         img_side_face = img_side.clone();
         img_side_face = draw_faces(img_side_face, face_coords_lst_side);
@@ -114,6 +141,7 @@ int BodySegmentator::run(const ArgumentParser& p)
         //Ear detection
         if(p.getEar()){ 
         std::vector<cv::Rect> ear = detectEar(img_side_ear.clone(),false,p.getFlip());
+        
         if (ear.size() > 0){
             cv::Rect biggest_ear = ear[0];
             for (int i = 1; i < ear.size(); ++i) {
@@ -132,12 +160,16 @@ int BodySegmentator::run(const ArgumentParser& p)
         cv::Mat img_side_nose = img_side_ear.clone(); 
         std::vector<cv::Rect> nose = detectNose(img_side_nose.clone(),false,p.getFlip());
         if (nose.size() > 0){
-            //cv::Rect biggest_nose = nose[0];
-            //for (int i = 1; i < nose.size(); ++i) {
+            cv::Rect biggest_nose = nose[0];
+            bool isNose = false;
+            for (int i = 0; i < nose.size(); ++i) {
             //    if (biggest_nose.area() < nose.at(i).area()) {
             //        biggest_nose = nose.at(i);
             //    }
-            //}
+                cv::Rect temp;
+                //std::tie(isNose,temp) = IoU(original_height,original_width,new_height,new_width,nose.at(i),face_coords_lst_side[0]);
+                //if (isNose == true) std::cout<<"nose selected"<<std::endl;
+            }
             //nose = std::vector<cv::Rect>(1, biggest_nose);
             cv::Mat nose_image = fd_side.draw_rect(img_side_nose,nose);
             cv::imwrite("nose_detectoin.png",nose_image);
