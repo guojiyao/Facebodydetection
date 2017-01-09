@@ -140,7 +140,7 @@ int BodySegmentator::run(const ArgumentParser& p)
         FaceDetection fd_side = FaceDetection(int(height_side), int(width_side));
         //Ear detection
         if(p.getEar()){ 
-        std::vector<cv::Rect> ear = detectEar(img_side_ear.clone(),false,p.getFlip());
+        std::vector<cv::Rect> ear = detectEar(img_side_ear.clone(),true,p.getFlip());
         
         if (ear.size() > 0){
             cv::Rect biggest_ear = ear[0];
