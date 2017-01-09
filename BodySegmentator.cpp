@@ -140,8 +140,10 @@ int BodySegmentator::run(const ArgumentParser& p)
         // Create instance of FaceDetect just to use some of its methods
         FaceDetection fd_side = FaceDetection(int(height_side), int(width_side));
         //Ear detection
+        std::vector<cv::Rect> ear;
+        cv::Mat ear_image;
         if(p.getEar()){ 
-        std::vector<cv::Rect> ear = detectEar(img_side_ear.clone(),false,p.getFlip());
+        ear = detectEar(img_side_ear.clone(),false,p.getFlip());
         cv::Rect facebyEar;   
         bool isEar = false;     
         if (ear.size() > 0){
@@ -158,7 +160,8 @@ int BodySegmentator::run(const ArgumentParser& p)
                 }
             }
             ear = std::vector<cv::Rect>(1, biggest_ear);
-            cv::Mat ear_image = fd_side.draw_rect(img_side_ear,ear);
+            ear_image = img_side_ear.clone();
+            ear_image = fd_side.draw_rect(ear_image,ear);
             int x = facebyEar.x;
             int y = facebyEar.y;
             int h = facebyEar.height;
@@ -188,7 +191,9 @@ int BodySegmentator::run(const ArgumentParser& p)
                 }
             }
             nose = std::vector<cv::Rect>(1, biggest_nose);
+           
             cv::Mat nose_image = fd_side.draw_rect(img_side_nose,nose);
+            if (p.getEar()) nose_image = fd_side.draw_rect(nose_image,ear);
             int x = newface.x;
             int y = newface.y;
             int h = newface.height;
